@@ -251,7 +251,7 @@ function espresso_manager_install(){
 	    'espresso_event_manager' => true,
 	    'delete_posts' => false, // Use false to explicitly deny
 	));
-	$result = add_role('espresso_event_admin', 'Espresso Event Admin', array(
+	$result = add_role('espresso_event_admin', 'Espresso Master Admin', array(
 	    'read' => true, // True allows that capability
 	    'edit_posts' => false,
 	    'espresso_group_admin' => false,
@@ -436,7 +436,7 @@ function espresso_permissions_config_mnu(){
 
 	$values=array(
 		array('id'=>'administrator','text'=> __('Administrator','event_espresso')),
-		array('id'=>'espresso_event_admin','text'=> __('Event Admin','event_espresso')),
+		array('id'=>'espresso_event_admin','text'=> __('Event Master Admin','event_espresso')),
 		array('id'=>'espresso_event_manager','text'=> __('Event Manager','event_espresso')),
 		array('id'=>'espresso_group_admin','text'=> __('Regional Manager','event_espresso'))
 	);
