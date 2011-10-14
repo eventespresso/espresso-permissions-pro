@@ -436,7 +436,7 @@ function espresso_permissions_config_mnu(){
 
 	$values=array(
 		array('id'=>'administrator','text'=> __('Administrator','event_espresso')),
-		array('id'=>'espresso_event_admin','text'=> __('Event Master Admin','event_espresso')),
+		array('id'=>'espresso_event_admin','text'=> __('Master Admin','event_espresso')),
 		array('id'=>'espresso_event_manager','text'=> __('Event Manager','event_espresso')),
 		array('id'=>'espresso_group_admin','text'=> __('Regional Manager','event_espresso'))
 	);
