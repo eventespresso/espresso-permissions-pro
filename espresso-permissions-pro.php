@@ -14,12 +14,7 @@ Copyright 2011  Event Espresso  (email : support@eventespresso.com)
 function espresso_manager_pro_version() {
 	return '2.0.1';
 }
-define("ESPRESSO_MANAGER_VERSION", espresso_manager_pro_version() );
-
-//Define the plugin directory and path
-define("ESPRESSO_MANAGER_PLUGINPATH", "/" . plugin_basename( dirname(__FILE__) ) . "/");
-define("ESPRESSO_MANAGER_PLUGINFULLPATH", WP_PLUGIN_DIR . ESPRESSO_MANAGER_PLUGINPATH  );
-define("ESPRESSO_MANAGER_PLUGINFULLURL", WP_PLUGIN_URL . ESPRESSO_MANAGER_PLUGINPATH );
+define("ESPRESSO_MANAGER_PRO_VERSION", espresso_manager_pro_version() );
 
 //Globals
 global $espresso_manager;
@@ -217,4 +212,100 @@ function espresso_manager_pro_options(){
 
 function espresso_edit_groups_page(){
 	require_once( 'includes/groups.php' );
+}
+
+if (!function_exists('espresso_manager_list')) {
+
+	function espresso_manager_list($current_value=0) {
+		global $espresso_premium;
+		if ($espresso_premium != true)
+			return;
+		//global $wpdb, $espresso_manager, $current_user;
+		 
+		// Get all event users users
+		$blogusers = get_users_of_blog();
+		 
+		// If there are any users
+		if ($blogusers) {
+			$field = '<label>' . __('Select an Event Admin or Manager', 'event_espresso') . '</label>';
+			$field .= '<select name="wp_user[]" id="wp_user" style="width:240px">';
+			$field .= '<option value="0">' . __('Select a User', 'event_espresso') . '</option>';
+			$div = "";
+			$help_div = "";
+			$i = 0;
+			foreach ($blogusers as $bloguser) {
+	 
+				// Get user info
+				$user = new WP_User($bloguser->user_id);
+				//echo $current_value;
+			   
+				if ($user->has_cap('espresso_event_manager') || $user->has_cap('espresso_group_admin') || $user->has_cap('espresso_event_admin') || $user->has_cap('administrator') ) {
+					$i++;
+					$selected = $user->ID == $current_value ? 'selected="selected"' : '';
+					if ($user->first_name) { 
+						$user_name = $user->first_name;
+						$user_name .= $user->last_name ? ' ' . $user->last_name:'' ;
+					}else{
+						$user_name = $user->user_nicename;
+					}
+					$field .= '<option rel="' . $i . '" ' . $selected . ' value="' . $user->ID . '">'.$user_name.' (' . $user->user_login . ') </option>';
+					
+					
+					$hidden = "display:none;";
+					if ($selected)
+						$hidden = '';
+					//$div .= "<br />";
+					$div .= "<fieldset id='eebox_user_" . $i . "' class='eebox_user' style='" . $hidden . "'>";
+					$div .= "<hr />";
+					$div .= "<ul class='user-view'>";
+					$div .= '<li><div style="float:right">'.get_avatar($user->user_email, $size = '48').'</div><strong>Display Name:</strong> <a href="user-edit.php?user_id='.$user->ID.'">'.$user->display_name.'</a>';
+					if ($user->first_name) { 
+						$div .= '<li><strong>'.__('Full Name:', 'event_espresso').'</strong> ' . $user->first_name;
+						if ($user->last_name) { $div .= ' '.$user->last_name; }
+						$div .= "<li>";
+					}
+					$div .= '<li><strong>' . __('Username:', 'event_espresso') . '</strong> ' . $user->user_login . '</li>';
+					$div .= '<li><strong>' . __('Email:', 'event_espresso') . '</strong> ' . $user->user_email . '</li>';
+					$div .= "</ul>";
+					$div .= "<hr />";
+					$div .= "</fieldset>";
+					
+					
+					
+					/*// display avatar (48px square)
+					echo get_avatar($user->user_email, $size = '48');
+	 
+					// output other user data, if populated
+					echo('Display Name: <a href=\"'.$user->user_url."\">".$user->display_name."</a><br />\n");
+					echo('Username: ' . $user->user_login . "<br />\n");
+					if ($user->user_nicename) { echo('User Nice Name: ' . $user->user_nicename . "<br />\n"); }
+					if ($user->user_email) { echo('User e-mail: ' . $user->user_email . "<br />\n"); }
+					if ($user->first_name) { echo('First Name: ' . $user->first_name . "&nbsp;"); }
+					if ($user->last_name) { echo($user->last_name . "<br />\n"); }
+					if ($user->nickname) { echo('Nickname: ' . $user->nickname . "<br />\n"); }
+					if ($user->description) { echo('Bio: ' . $user->description . "<br />\n"); }
+					echo "<hr />";*/
+				}
+			}
+			$field .= "</select>";
+			ob_start();
+				?>
+				<script>
+					jQuery("#wp_user").change( function(){
+						var selected = jQuery("#wp_user option:selected");
+						var rel = selected.attr("rel");
+						jQuery(".eebox_user").hide();
+						jQuery("#eebox_user_"+rel).show();
+					});
+				</script>
+				<?php
+				$js = ob_get_contents();
+				ob_end_clean();
+				$html = '<table><tr><td>' . $field . '</td></tr><tr><td>' . $div . '</td></tr></table>' . $js;
+				return $html;
+		}
+	
+
+	}
+
 }
