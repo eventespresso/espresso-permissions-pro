@@ -175,8 +175,9 @@ if (!function_exists('espresso_manager_list')) {
 		//global $wpdb, $espresso_manager, $current_user;
 		 
 		// Get all event users users
-		$blogusers = get_users_of_blog();
-		 
+		$blogusers = get_users();
+		//print_r($blogusers);
+		
 		// If there are any users
 		if ($blogusers) {
 			$field = '<label>' . __('Select an Event Admin or Manager', 'event_espresso') . '</label>';
@@ -186,9 +187,9 @@ if (!function_exists('espresso_manager_list')) {
 			$help_div = "";
 			$i = 0;
 			foreach ($blogusers as $bloguser) {
-	 
+	 			//echo $bloguser->ID.'<br />';
 				// Get user info
-				$user = new WP_User($bloguser->user_id);
+				$user = new WP_User($bloguser->ID);
 				//echo $current_value;
 			   
 				if ($user->has_cap('espresso_event_manager') || $user->has_cap('espresso_group_admin') || $user->has_cap('espresso_event_admin') || $user->has_cap('administrator') ) {
