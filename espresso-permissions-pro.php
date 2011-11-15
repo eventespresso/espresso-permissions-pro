@@ -70,6 +70,104 @@ if (!function_exists('espresso_is_admin')) {
 	}
 }
 
+function espresso_select_manager_form(){
+	espresso_load_selected_manager();
+?>
+<a name="selected_user" id="selected_user"></a>
+<div class="postbox">
+	<h3>
+		<?php _e('Load Manager Details', 'event_espresso'); ?>
+	</h3>
+	<div class="inside">
+		<form method="post" action="<?php echo $_SERVER['REQUEST_URI']?>">
+			<ul>
+				<?php 
+				if (espresso_get_selected_manager() == true){ ?>
+				<li>
+					<label><?php _e('Current Selected Manager:', 'event_espresso'); ?> <?php echo espresso_get_selected_manager(); ?></label><br />
+					 <input name="deactivate_user" type="checkbox" value="1" /> <?php _e('Unload current manager?', 'event_espresso'); ?></li>
+				<?php 
+					$manager_loaded = true;	
+				}?>
+				<li>
+					<label for="event_manager_id">
+						<?php _e('User Id:', 'event_espresso'); ?>
+					</label>
+					<br />
+					<input type="text" name="event_manager_id" size="10" value="" />
+				</li>
+				<li>
+					<input class="button-primary" type="submit" name="Submit" value="<?php $manager_loaded == true ?  _e('Unload/','event_espresso'): ''; _e('Load Manager','event_espresso'); ?>" id="load_manager" />
+				</li>
+			</ul>
+		</form>
+	</div>
+</div>
+<?php
+	if ( did_action( 'espresso_admin_notices' ) == false )
+		do_action('espresso_admin_notices');
+}
+
+//Loads selected manager data
+function espresso_load_selected_manager(){
+	global $notices;
+	
+	//Get the user id
+	$user_id = isset($_POST['event_manager_id']) ? $_POST['event_manager_id'] : '';
+	
+	//Deactivate the loaded user information
+	if ($_POST['deactivate_user']){
+		$_SESSION['espresso_use_selected_manager'] = 0;
+		$_SESSION['espresso_selected_manager'] = 0;
+		return false;
+	}
+	
+	//If no user id, then exit.
+	if (empty($user_id))
+		return false;
+	
+	//Make sure the id exists and the user is one of the roles below.
+	$user = new WP_User( $user_id );
+	if ($user->has_cap('espresso_event_manager') || $user->has_cap('espresso_group_admin') || $user->has_cap('espresso_event_admin') || $user->has_cap('administrator')){
+		//Load the manager
+		$_SESSION['espresso_use_selected_manager'] = true;
+		$_SESSION['espresso_selected_manager'] = $user_id;
+		
+		//Display update message
+		$notices['updates'][] = __('User has been loaded.', 'event_espresso').$wp_user;
+		do_action('espresso_admin_notices');
+		return true;
+	}else{
+		//Unload current manager
+		$_SESSION['espresso_use_selected_manager'] = 0;
+		$_SESSION['espresso_selected_manager'] = 0;
+		
+		//Display error message
+		$notices['errors'][] = __('That user is not an event manager/admin.', 'event_espresso').$wp_user;
+		do_action('espresso_admin_notices');
+		return false;
+	}
+}
+
+function espresso_show_user_loaded_notice(){
+	global $notices, $current_user, $espresso_wp_user;
+	if ($_SESSION['espresso_use_selected_manager'] == false)
+		return false;
+			
+	if ($current_user->ID != $espresso_wp_user){
+		$notices['updates'][] = __('User Loaded:', 'event_espresso'). ' ' . $espresso_wp_user . ' <a href="admin.php?page=espresso_permissions#selected_user">' . __('Deactivate?', 'event_espresso') . '</a>';
+		return true;
+	}
+}
+add_action('espresso_admin_notices', 'espresso_show_user_loaded_notice');
+
+//Gets the selected manager
+function espresso_get_selected_manager(){
+	if ($_SESSION['espresso_use_selected_manager'] == false)
+		return false;
+	return $_SESSION['espresso_selected_manager'];
+}
+
 //Checks to see if this is the users event
 if (!function_exists('espresso_is_my_event')) {
 	function espresso_is_my_event($event_id){
@@ -117,15 +215,15 @@ function espresso_do_i_manage($event_id){
 function espresso_permissions_user_groups(){
 	global $wpdb, $espresso_manager, $wp_roles;
 ?>
-    <div id="configure_espresso_manager_form" class="wrap meta-box-sortables ui-sortable">
-      <div id="icon-options-event" class="icon32"> </div>
-      <h2>
-        <?php _e('Event Espresso - Regional Managers','event_espresso'); ?>
-      </h2>
-      <div id="event_espresso-col-left" style="width:70%;">
-        <?php espresso_edit_groups_page(); ?>
-      </div>
-    </div>
+<div id="configure_espresso_manager_form" class="wrap meta-box-sortables ui-sortable">
+	<div id="icon-options-event" class="icon32"> </div>
+	<h2>
+		<?php _e('Event Espresso - Regional Managers','event_espresso'); ?>
+	</h2>
+	<div id="event_espresso-col-left" style="width:70%;">
+		<?php espresso_edit_groups_page(); ?>
+	</div>
+</div>
 <?php
 }
 
@@ -136,29 +234,28 @@ function espresso_manager_pro_options(){
 		array('id'=>'Y','text'=> __('Yes','event_espresso')),
 	);
 ?>
-
-    <div class="postbox">
-      <h3>
-        <?php _e('Advanced Options', 'event_espresso'); ?>
-      </h3>
-      <div class="inside">
-        <p>
-          <?php _e('Events created by "Event Managers" require approval?', 'event_espresso'); ?>
-          <?php echo select_input('event_manager_approval', $values, $espresso_manager['event_manager_approval']);?></p>
-        <p>
-          <?php _e('Regional managers can edit venues assigned to them?', 'event_espresso'); ?>
-          <?php echo select_input('event_manager_venue', $values, $espresso_manager['event_manager_venue']);?></p>
-        <p>
-          <?php _e('Regional managers are in charge only of their staff?', 'event_espresso'); ?>
-          <?php echo select_input('event_manager_staff', $values, $espresso_manager['event_manager_staff']);?></p>
-        <p>
-          <?php _e('Anyone can create a post when publishing an event?', 'event_espresso'); ?>
-          <?php echo select_input('event_manager_create_post', $values, $espresso_manager['event_manager_create_post']);?></p>
-        <p>
-          <?php _e('Enable sharing of categories between users?', 'event_espresso'); ?>
-          <?php echo select_input('event_manager_share_cats', $values, $espresso_manager['event_manager_share_cats']);?></p>
-      </div>
-    </div>
+<div class="postbox">
+	<h3>
+		<?php _e('Advanced Options', 'event_espresso'); ?>
+	</h3>
+	<div class="inside">
+		<p>
+			<?php _e('Events created by "Event Managers" require approval?', 'event_espresso'); ?>
+			<?php echo select_input('event_manager_approval', $values, $espresso_manager['event_manager_approval']);?></p>
+		<p>
+			<?php _e('Regional managers can edit venues assigned to them?', 'event_espresso'); ?>
+			<?php echo select_input('event_manager_venue', $values, $espresso_manager['event_manager_venue']);?></p>
+		<p>
+			<?php _e('Regional managers are in charge only of their staff?', 'event_espresso'); ?>
+			<?php echo select_input('event_manager_staff', $values, $espresso_manager['event_manager_staff']);?></p>
+		<p>
+			<?php _e('Anyone can create a post when publishing an event?', 'event_espresso'); ?>
+			<?php echo select_input('event_manager_create_post', $values, $espresso_manager['event_manager_create_post']);?></p>
+		<p>
+			<?php _e('Enable sharing of categories between users?', 'event_espresso'); ?>
+			<?php echo select_input('event_manager_share_cats', $values, $espresso_manager['event_manager_share_cats']);?></p>
+	</div>
+</div>
 <?php
 }
 
@@ -223,8 +320,6 @@ if (!function_exists('espresso_manager_list')) {
 					$div .= "<hr />";
 					$div .= "</fieldset>";
 					
-					
-					
 					/*// display avatar (48px square)
 					echo get_avatar($user->user_email, $size = '48');
 	 
@@ -243,7 +338,7 @@ if (!function_exists('espresso_manager_list')) {
 			$field .= "</select>";
 			ob_start();
 				?>
-				<script>
+<script>
 					jQuery("#wp_user").change( function(){
 						var selected = jQuery("#wp_user option:selected");
 						var rel = selected.attr("rel");
@@ -251,14 +346,14 @@ if (!function_exists('espresso_manager_list')) {
 						jQuery("#eebox_user_"+rel).show();
 					});
 				</script>
-				<?php
+<?php
 				$js = ob_get_contents();
 				ob_end_clean();
 				$html = '<table><tr><td>' . $field . '</td></tr><tr><td>' . $div . '</td></tr></table>' . $js;
 				return $html;
 		}
-	
-
 	}
-
 }
+
+
+
