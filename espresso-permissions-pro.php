@@ -76,16 +76,17 @@ function espresso_select_manager_form(){
 <a name="selected_user" id="selected_user"></a>
 <div class="postbox">
 	<h3>
-		<?php _e('Load Manager Details', 'event_espresso'); ?>
+		<?php _e('Login As User', 'event_espresso'); ?>
 	</h3>
 	<div class="inside">
 		<form method="post" action="<?php echo $_SERVER['REQUEST_URI']?>">
 			<ul>
+			<li><?php _e('This section allows you to login as any event manager, regional manager or master admin.', 'event_espresso'); ?></li>
 				<?php 
 				if (espresso_get_selected_manager() == true){ ?>
 				<li>
-					<label><?php _e('Current Selected Manager:', 'event_espresso'); ?> <?php echo espresso_get_selected_manager(); ?></label><br />
-					 <input name="deactivate_user" type="checkbox" value="1" /> <?php _e('Unload current manager?', 'event_espresso'); ?></li>
+					<label class="highlight"><?php _e('Currently Logged-in As User ID:', 'event_espresso'); ?> <?php echo espresso_get_selected_manager(); ?></label><br />
+					 <input name="deactivate_user" type="checkbox" value="1" /> <?php _e('Logout of current user?', 'event_espresso'); ?></li>
 				<?php 
 					$manager_loaded = true;	
 				}?>
