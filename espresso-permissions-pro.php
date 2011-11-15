@@ -85,8 +85,8 @@ function espresso_select_manager_form(){
 				<?php 
 				if (espresso_get_selected_manager() == true){ ?>
 				<li>
-					<label class="highlight"><?php _e('Currently Logged-in As User ID:', 'event_espresso'); ?> <?php echo espresso_get_selected_manager(); ?></label><br />
-					 <input name="deactivate_user" type="checkbox" value="1" /> <?php _e('Logout of current user?', 'event_espresso'); ?></li>
+					<span class="highlight"><label><strong><?php _e('Currently Logged-in As User ID:', 'event_espresso'); ?> <?php echo espresso_get_selected_manager(); ?></strong></label><br />
+					 <input name="deactivate_user" type="checkbox" value="1" /> <?php _e('Logout of current user?', 'event_espresso'); ?></span></li>
 				<?php 
 					$manager_loaded = true;	
 				}?>
