@@ -26,22 +26,22 @@ function espresso_manager_pro_install(){
 	
 	//Regional Manager role
 	$result = add_role('espresso_group_admin', 'Espresso Regional Manager', array(
-	    'read' => true, // True allows that capability
-	    'edit_posts' => false,
-	    'espresso_group_admin' => true,
-	    'espresso_event_admin' => true,
-	    'espresso_event_manager' => true,
-	    'delete_posts' => false, // Use false to explicitly deny
+		'read' => true, // True allows that capability
+		'edit_posts' => false,
+		'espresso_group_admin' => true,
+		'espresso_event_admin' => true,
+		'espresso_event_manager' => true,
+		'delete_posts' => false, // Use false to explicitly deny
 	));
 	
 	//Event Manager role
 	$result = add_role('espresso_event_manager', 'Espresso Event Manager', array(
-	    'read' => true, // True allows that capability
-	    'edit_posts' => false,
-	    'espresso_group_admin' => false,
-	    'espresso_event_admin' => false,
-	    'espresso_event_manager' => true,
-	    'delete_posts' => false, // Use false to explicitly deny
+		'read' => true, // True allows that capability
+		'edit_posts' => false,
+		'espresso_group_admin' => false,
+		'espresso_event_admin' => false,
+		'espresso_event_manager' => true,
+		'delete_posts' => false, // Use false to explicitly deny
 	));
 }
 register_activation_hook(__FILE__,'espresso_manager_pro_install');
