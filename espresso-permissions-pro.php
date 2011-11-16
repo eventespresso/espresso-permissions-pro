@@ -255,6 +255,9 @@ function espresso_manager_pro_options(){
 		<p>
 			<?php _e('Enable sharing of categories between users?', 'event_espresso'); ?>
 			<?php echo select_input('event_manager_share_cats', $values, $espresso_manager['event_manager_share_cats']);?></p>
+		<p>
+		  <?php _e('Managers can accept payments?', 'event_espresso'); ?>
+		  <?php echo select_input('can_accept_payments', $values, $espresso_manager['can_accept_payments']);?></p>
 	</div>
 </div>
 <?php
