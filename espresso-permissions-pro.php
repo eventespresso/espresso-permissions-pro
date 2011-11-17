@@ -66,6 +66,8 @@ if (!function_exists('espresso_is_admin')) {
 	function espresso_is_admin(){
 		if( espresso_member_data('role')=='espresso_group_admin' || espresso_member_data('role')=='espresso_event_admin' || current_user_can('administrator') ){
 			return true;
+		}else{
+			return false;
 		}
 	}
 }
@@ -76,17 +78,19 @@ function espresso_select_manager_form(){
 <a name="selected_user" id="selected_user"></a>
 <div class="postbox">
 	<h3>
-		<?php _e('Login As User', 'event_espresso'); ?>
+		<?php _e('Login as a User', 'event_espresso'); ?>
 	</h3>
 	<div class="inside">
 		<form method="post" action="<?php echo $_SERVER['REQUEST_URI']?>">
 			<ul>
 			<li><?php _e('This section allows you to login as any event manager, regional manager or master admin.', 'event_espresso'); ?></li>
 				<?php 
-				if (espresso_get_selected_manager() == true){ ?>
+				if (espresso_get_selected_manager() == true){
+					$user = new WP_User( espresso_get_selected_manager() );
+				?>
 				<li>
-					<span class="highlight"><label><strong><?php _e('Currently Logged-in As User ID:', 'event_espresso'); ?> <?php echo espresso_get_selected_manager(); ?></strong></label><br />
-					 <input name="deactivate_user" type="checkbox" value="1" /> <?php _e('Logout of current user?', 'event_espresso'); ?></span></li>
+					<span class="highlight"><label><?php echo '<strong style="color:red">'. __('You are logged-in as:', 'event_espresso') . '</strong> <a href="user-edit.php?user_id='.$user->ID.'" target="_blank">' .  $user->display_name . ' (' . $user->user_email . ')</a>'; ?></label></span><br />
+					 <input name="deactivate_user" type="checkbox" value="1" /> <?php _e('Logout of current user?', 'event_espresso'); ?></li>
 				<?php 
 					$manager_loaded = true;	
 				}?>
@@ -98,7 +102,7 @@ function espresso_select_manager_form(){
 					<input type="text" name="event_manager_id" size="10" value="" />
 				</li>
 				<li>
-					<input class="button-primary" type="submit" name="Submit" value="<?php $manager_loaded == true ?  _e('Unload/','event_espresso'): ''; _e('Load Manager','event_espresso'); ?>" id="load_manager" />
+					<input class="button-primary" type="submit" name="Submit" value="<?php $manager_loaded == true ?  _e('Logout/','event_espresso'): ''; _e('Login Manager','event_espresso'); ?>" id="load_manager" />
 				</li>
 			</ul>
 		</form>
@@ -150,13 +154,15 @@ function espresso_load_selected_manager(){
 	}
 }
 
+//This function shows a notice that you are logged ina  someone else.
 function espresso_show_user_loaded_notice(){
 	global $notices, $current_user, $espresso_wp_user;
 	if ($_SESSION['espresso_use_selected_manager'] == false)
 		return false;
 			
 	if ($current_user->ID != $espresso_wp_user){
-		$notices['updates'][] = __('User Loaded:', 'event_espresso'). ' ' . $espresso_wp_user . ' <a href="admin.php?page=espresso_permissions#selected_user">' . __('Deactivate?', 'event_espresso') . '</a>';
+		$user = new WP_User( $espresso_wp_user );
+		$notices['updates'][] = '<strong style="color:red">'. __('You are logged-in as:', 'event_espresso') . '</strong> <a href="user-edit.php?user_id='.$user->ID.'" target="_blank">' .  $user->display_name . ' (' . $user->user_email . ')</a> [<a href="admin.php?page=espresso_permissions#selected_user" target="_blank">' . __('Exit User', 'event_espresso') . '</a>]';
 		return true;
 	}
 }
@@ -359,5 +365,138 @@ if (!function_exists('espresso_manager_list')) {
 	}
 }
 
+add_action( 'personal_options_update', 'espresso_check_default_questions' );
+add_action( 'edit_user_profile_update', 'espresso_check_default_questions' );
+
+function espresso_check_default_questions( $user_id ) {
+	global $wpdb;
+
+	if ( !current_user_can( 'edit_user', $user_id ) )
+		return false;
+
+    $role = $_POST['role'];
+
+    if (substr($role, 0, 9) == "espresso_") { // this covers any espresso roles
+        // since this is an espresso role, let's check to see if there are any questions assigned to this user
+        $questions = $wpdb->get_results($wpdb->prepare("SELECT * FROM ".$wpdb->prefix . "events_question WHERE wp_user=".$user_id));
+
+        if (sizeof($questions) == 0) {
+            // no questions, which hopefully means that somehow things went wrong and we need to add the defaults
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'First Name', 'question_type' => 'TEXT', 'system_name' => 'fname', 'required' => 'Y', 'sequence' => '0'), array('%s', '%s', '%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Last Name', 'question_type' => 'TEXT', 'system_name' => 'lname', 'required' => 'Y', 'sequence' => '1'), array('%s', '%s', '%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Email', 'question_type' => 'TEXT', 'system_name' => 'email', 'required' => 'Y', 'sequence' => '2'), array('%s', '%s', '%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Address', 'system_name' => 'address', 'sequence' => '3'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Address 2', 'system_name' => 'address2', 'sequence' => '3'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'City', 'system_name' => 'city', 'sequence' => '4'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'State', 'system_name' => 'state', 'sequence' => '5'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Zip', 'system_name' => 'zip', 'sequence' => '6'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Country', 'system_name' => 'country', 'sequence' => '6'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Phone', 'system_name' => 'phone', 'sequence' => '7'), array('%s', '%s', '%s') );
+            
+        }
+			$system_group = $wpdb->get_row("SELECT system_group FROM ". $wpdb->prefix . "events_qst_group" . " WHERE system_group = 1 AND wp_user='".$user_id."' ");
+	
+			if ($wpdb->num_rows == 0){
+	
+				/**
+				 * Add new groups, find id, assign the system questions to the group
+				 */
+	
+				$wpdb->insert( $wpdb->prefix . "events_qst_group", array('wp_user' => $user_id, 'group_name' => 'Personal Information', 'group_identifier'=>'personal_information-'.time(), 'system_group' => 1, 'group_order' => 1), array('%d','%s', '%s', '%d', '%d') );
+				
+				$personal_group_id = $wpdb->insert_id;
+				
+				$wpdb->insert( $wpdb->prefix . "events_qst_group", array('wp_user' => $user_id, 'group_name' => 'Address Information', 'group_identifier'=>'address_information-'.time(), 'system_group' => 0, 'group_order' => 2), array('%d','%s', '%s', '%d', '%d') );
+				
+				$address_group_id = $wpdb->insert_id;				
+	
+				/**
+				* Personal Information System Group
+				* Find fname, lname, and email ids.  At this point, they will be in the system group.
+				*/
+				$system_name_data = "SELECT id, system_name FROM " . $wpdb->prefix . "events_question" . " WHERE system_name IN ('fname', 'lname', 'email') AND wp_user='".$user_id."' ";
+				$system_names = $wpdb->get_results($system_name_data);
+				foreach ($system_names as $system_name){
+					$wpdb->insert( $wpdb->prefix . "events_qst_group_rel", array('group_id' => $personal_group_id, 'question_id' => $system_name->id), array('%d', '%d') );
+				}
+						
+				/**
+				* Address Group
+				* Find address, city, state, and zip ids.
+				*/
+				$system_name_data = "SELECT id, system_name FROM " . $wpdb->prefix . "events_question" . " where system_name IN ('address', 'city', 'state', 'zip' ) AND wp_user='".$user_id."' ";
+				$system_names = $wpdb->get_results($system_name_data);
+				foreach ($system_names as $system_name){
+					$wpdb->insert( $wpdb->prefix . "events_qst_group_rel", array('group_id' => $address_group_id, 'question_id' => $system_name->id), array('%d', '%d') );
+				}
+			}
+    }    
+} // function espresso_check_default_questions
+
+
+add_action('user_register','espresso_add_default_questions');
+
+function espresso_add_default_questions($user_id){
+  	global $wpdb;
+    $role = $_POST['role'];
+
+    if (substr($role, 0, 9) == "espresso_") { // this covers any espresso roles
+        // since this is an espresso role, let's check to see if there are any questions assigned to this user
+        $questions = $wpdb->get_results($wpdb->prepare("SELECT * FROM ".$wpdb->prefix . "events_question WHERE wp_user=".$user_id));
+
+        if (sizeof($questions) == 0) {
+            // no questions found, which is what we should be seeing, since this is a new user
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'First Name', 'question_type' => 'TEXT', 'system_name' => 'fname', 'required' => 'Y', 'sequence' => '0'), array('%s', '%s', '%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Last Name', 'question_type' => 'TEXT', 'system_name' => 'lname', 'required' => 'Y', 'sequence' => '1'), array('%s', '%s', '%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Email', 'question_type' => 'TEXT', 'system_name' => 'email', 'required' => 'Y', 'sequence' => '2'), array('%s', '%s', '%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Address', 'system_name' => 'address', 'sequence' => '3'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Address 2', 'system_name' => 'address2', 'sequence' => '3'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'City', 'system_name' => 'city', 'sequence' => '4'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'State', 'system_name' => 'state', 'sequence' => '5'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Zip', 'system_name' => 'zip', 'sequence' => '6'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Country', 'system_name' => 'country', 'sequence' => '6'), array('%s', '%s', '%s') );
+			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Phone', 'system_name' => 'phone', 'sequence' => '7'), array('%s', '%s', '%s') );
+
+        }
+		
+		$system_group = $wpdb->get_row("SELECT system_group FROM ". $wpdb->prefix . "events_qst_group" . " WHERE system_group = 1 AND wp_user='".$user_id."' ");
+	
+			if ($wpdb->num_rows == 0){
+	
+				/**
+				 * Add new groups, find id, assign the system questions to the group
+				 */
+	
+				$wpdb->insert( $wpdb->prefix . "events_qst_group", array('wp_user' => $user_id, 'group_name' => 'Personal Information', 'group_identifier'=>'personal_information-'.time(), 'system_group' => 1, 'group_order' => 1), array('%d','%s', '%s', '%d', '%d') );
+				
+				$personal_group_id = $wpdb->insert_id;
+				
+				$wpdb->insert( $wpdb->prefix . "events_qst_group", array('wp_user' => $user_id, 'group_name' => 'Address Information', 'group_identifier'=>'address_information-'.time(), 'system_group' => 0, 'group_order' => 2), array('%d','%s', '%s', '%d', '%d') );
+				
+				$address_group_id = $wpdb->insert_id;				
+	
+				/**
+				* Personal Information System Group
+				* Find fname, lname, and email ids.  At this point, they will be in the system group.
+				*/
+				$system_name_data = "SELECT id, system_name FROM " . $wpdb->prefix . "events_question" . " WHERE system_name IN ('fname', 'lname', 'email') AND wp_user='".$user_id."' ";
+				$system_names = $wpdb->get_results($system_name_data);
+				foreach ($system_names as $system_name){
+					$wpdb->insert( $wpdb->prefix . "events_qst_group_rel", array('group_id' => $personal_group_id, 'question_id' => $system_name->id), array('%d', '%d') );
+				}
+						
+				/**
+				* Address Group
+				* Find address, city, state, and zip ids.
+				*/
+				$system_name_data = "SELECT id, system_name FROM " . $wpdb->prefix . "events_question" . " where system_name IN ('address', 'city', 'state', 'zip' ) AND wp_user='".$user_id."' ";
+				$system_names = $wpdb->get_results($system_name_data);
+				foreach ($system_names as $system_name){
+					$wpdb->insert( $wpdb->prefix . "events_qst_group_rel", array('group_id' => $address_group_id, 'question_id' => $system_name->id), array('%d', '%d') );
+				}
+			}
+    }
+
+} // function espresso_add_default_questions
 
 
