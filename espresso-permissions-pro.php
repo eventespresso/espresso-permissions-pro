@@ -96,7 +96,7 @@ function espresso_select_manager_form(){
 				}?>
 				<li>
 					<label for="event_manager_id">
-						<?php _e('User Id:', 'event_espresso'); ?>
+						<?php _e('User Id:', 'event_espresso'); ?> <?php apply_filters( 'espresso_help', 'login_as_user');?>
 					</label>
 					<br />
 					<input type="text" name="event_manager_id" size="10" value="" />
@@ -235,6 +235,7 @@ function espresso_permissions_user_groups(){
 }
 
 function espresso_manager_pro_options(){
+	require_once( 'includes/pro_help.php' );
 	global $espresso_manager;
 	$values=array(
 		array('id'=>'N','text'=> __('No','event_espresso')),
@@ -248,22 +249,24 @@ function espresso_manager_pro_options(){
 	<div class="inside">
 		<p>
 			<?php _e('Events created by "Event Managers" require approval?', 'event_espresso'); ?>
-			<?php echo select_input('event_manager_approval', $values, $espresso_manager['event_manager_approval']);?></p>
+			<?php echo select_input('event_manager_approval', $values, $espresso_manager['event_manager_approval']);?> <?php apply_filters( 'espresso_help', 'event_manager_approval');?></p>
 		<p>
 			<?php _e('Regional managers can edit venues assigned to them?', 'event_espresso'); ?>
-			<?php echo select_input('event_manager_venue', $values, $espresso_manager['event_manager_venue']);?></p>
-		<p>
+			<?php echo select_input('event_manager_venue', $values, $espresso_manager['event_manager_venue']);?> <?php apply_filters( 'espresso_help', 'event_manager_venue');?></p>
+		<?php
+		//I can't remember what this is for and it doesn't seem to have any settings anywhere. So I am disabling it for now. I think it was added for SMW??
+		 /*?><p>
 			<?php _e('Regional managers are in charge only of their staff?', 'event_espresso'); ?>
-			<?php echo select_input('event_manager_staff', $values, $espresso_manager['event_manager_staff']);?></p>
-		<p>
+			<?php echo select_input('event_manager_staff', $values, $espresso_manager['event_manager_staff']);?> <?php apply_filters( 'espresso_help', 'event_manager_create_post');?></p>
+		<p><?php */?>
 			<?php _e('Anyone can create a post when publishing an event?', 'event_espresso'); ?>
-			<?php echo select_input('event_manager_create_post', $values, $espresso_manager['event_manager_create_post']);?></p>
+			<?php echo select_input('event_manager_create_post', $values, $espresso_manager['event_manager_create_post']);?> <?php apply_filters( 'espresso_help', 'event_manager_create_post');?></p>
 		<p>
 			<?php _e('Enable sharing of categories between users?', 'event_espresso'); ?>
-			<?php echo select_input('event_manager_share_cats', $values, $espresso_manager['event_manager_share_cats']);?></p>
+			<?php echo select_input('event_manager_share_cats', $values, $espresso_manager['event_manager_share_cats']);?> <?php apply_filters( 'espresso_help', 'event_manager_share_cats');?></p>
 		<p>
-		  <?php _e('Managers can accept payments?', 'event_espresso'); ?>
-		  <?php echo select_input('can_accept_payments', $values, $espresso_manager['can_accept_payments']);?></p>
+		  <?php _e('Managers can accept payments for their events?', 'event_espresso'); ?>
+		  <?php echo select_input('can_accept_payments', $values, $espresso_manager['can_accept_payments']);?> <?php apply_filters( 'espresso_help', 'can_accept_payments');?></p> 
 	</div>
 </div>
 <?php
