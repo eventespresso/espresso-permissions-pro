@@ -12,7 +12,7 @@ Copyright 2011  Event Espresso  (email : support@eventespresso.com)
 
 //Define the version of the plugin
 function espresso_manager_pro_version() {
-	return '2.0.1';
+	return '2.0.2';
 }
 define("ESPRESSO_MANAGER_PRO_VERSION", espresso_manager_pro_version() );
 
