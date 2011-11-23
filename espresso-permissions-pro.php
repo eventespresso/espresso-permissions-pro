@@ -502,4 +502,24 @@ function espresso_add_default_questions($user_id){
 
 } // function espresso_add_default_questions
 
-
+function espresso_locale_select($cur_locale_id = 0) {
+	global $wpdb;
+	$sql = "SELECT * FROM ". EVENTS_LOCALE_TABLE ." ORDER BY name ASC";
+	$results = $wpdb->get_results($sql);
+		
+	if ($wpdb->num_rows > 0) { 
+		$html = '<select name="locale" id="locale" class="chzn-select wide" >';
+		foreach ($results as $result){
+			$sel = "";		
+			if( $cur_locale_id == $result->id ){
+				$sel = " SELECTED ";
+			}
+			$html .= '<option value="'.$result->id.'" '.$sel.'>'.stripslashes($result->name).'</option>';
+		}
+		$html .= '</select>';
+	}
+	if(empty($result->id)){
+		$html = sprintf(__('You have not created any locales yet. To create Locales please visit % page.', 'event_espresso'), '<a href="admin.php?page=event_locales">'.__('Manage Locales/Regions', 'event_espresso').'</a>'); 
+	}
+	return $html;
+}
