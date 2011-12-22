@@ -285,8 +285,31 @@ if (!function_exists('espresso_manager_list')) {
 		//global $wpdb, $espresso_manager, $current_user;
 		 
 		// Get all event users users
-		$blogusers = get_users();
-		//print_r($blogusers);
+		//$blogusers = get_users();
+		
+		$event_managers = get_users(array(
+		    'role' => 'espresso_event_manager'
+		    //espresso_group_admin, wordpress administrator, espresso_event_admin
+		  ));
+		  
+		$group_admins = get_users(array(
+		    'role' => 'espresso_group_admin'
+		    //espresso_group_admin, wordpress administrator, espresso_event_admin
+		  ));
+		  
+		$admins = get_users(array(
+			'role' => 'administrator'
+		));  	
+		
+		$eadmins = get_users(array(
+			'role' => 'espresso_event_admin'
+		));
+			
+		//var_dump($blogusers);
+		
+		$blogusers1 = array_merge($event_managers, $group_admins);
+		$all_admins = array_merge($admins, $eadmins);
+		$blogusers = array_merge($blogusers1, $all_admins);
 		
 		// If there are any users
 		if ($blogusers) {
