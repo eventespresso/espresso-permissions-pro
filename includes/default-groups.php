@@ -1,6 +1,6 @@
 <div class="wrap">
 	<h2><?php echo $title; ?></h2>
-	<?php do_action( 'espresso_pre_edit_groups_form' );?>
+	<?php do_action( 'action_hook_espresso_pre_edit_groups_form' );?>
 	<div id="poststuff">
 		<table class="widefat fixed" cellspacing="0">
 		<thead>
