@@ -471,3 +471,9 @@ function espresso_locale_select($cur_locale_id = 0) {
 	}
 	return $html;
 }
+
+function espresso_add_new_event_submit_box_permissions_pro_filter($buffer) {
+	$buffer .= '<div style="padding:10px 0 10px 10px" class="clearfix">' . espresso_manager_list(get_current_user_id()) . '</div>';
+	return $buffer;
+}
+add_filter('filter_hook_espresso_add_new_event_submit_box', 'espresso_add_new_event_submit_box_permissions_pro_filter');
