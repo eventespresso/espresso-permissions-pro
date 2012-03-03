@@ -23,7 +23,7 @@ $espresso_manager = get_option('espresso_manager_settings');
 //Install the plugin
 function espresso_manager_pro_install(){
 	// add more capabilities
-	
+
 	//Regional Manager role
 	$result = add_role('espresso_group_admin', 'Espresso Regional Manager', array(
 		'read' => true, // True allows that capability
@@ -33,7 +33,7 @@ function espresso_manager_pro_install(){
 		'espresso_event_manager' => true,
 		'delete_posts' => false, // Use false to explicitly deny
 	));
-	
+
 	//Event Manager role
 	$result = add_role('espresso_event_manager', 'Espresso Event Manager', array(
 		'read' => true, // True allows that capability
@@ -84,15 +84,15 @@ function espresso_select_manager_form(){
 		<form method="post" action="<?php echo $_SERVER['REQUEST_URI']?>">
 			<ul>
 			<li><?php _e('This section allows you to login as any event manager, regional manager or master admin.', 'event_espresso'); ?></li>
-				<?php 
+				<?php
 				if (espresso_get_selected_manager() == true){
 					$user = new WP_User( espresso_get_selected_manager() );
 				?>
 				<li>
 					<span class="highlight"><label><?php echo '<strong style="color:red">'. __('You are logged-in as:', 'event_espresso') . '</strong> <a href="user-edit.php?user_id='.$user->ID.'" target="_blank">' .  $user->display_name . ' (' . $user->user_email . ')</a>'; ?></label></span><br />
 					 <input name="deactivate_user" type="checkbox" value="1" /> <?php _e('Logout of current user?', 'event_espresso'); ?></li>
-				<?php 
-					$manager_loaded = true;	
+				<?php
+					$manager_loaded = true;
 				}?>
 				<li>
 					<label for="event_manager_id">
@@ -116,28 +116,28 @@ function espresso_select_manager_form(){
 //Loads selected manager data
 function espresso_load_selected_manager(){
 	global $notices;
-	
+
 	//Get the user id
 	$user_id = isset($_POST['event_manager_id']) ? $_POST['event_manager_id'] : '';
-	
+
 	//Deactivate the loaded user information
 	if ($_POST['deactivate_user']){
 		$_SESSION['espresso_use_selected_manager'] = 0;
 		$_SESSION['espresso_selected_manager'] = 0;
 		return false;
 	}
-	
+
 	//If no user id, then exit.
 	if (empty($user_id))
 		return false;
-	
+
 	//Make sure the id exists and the user is one of the roles below.
 	$user = new WP_User( $user_id );
 	if ($user->has_cap('espresso_event_manager') || $user->has_cap('espresso_group_admin') || $user->has_cap('espresso_event_admin') || $user->has_cap('administrator')){
 		//Load the manager
 		$_SESSION['espresso_use_selected_manager'] = true;
 		$_SESSION['espresso_selected_manager'] = $user_id;
-		
+
 		//Display update message
 		$notices['updates'][] = __('User has been loaded.', 'event_espresso').$wp_user;
 		do_action( 'action_hook_espresso_admin_notices');
@@ -146,7 +146,7 @@ function espresso_load_selected_manager(){
 		//Unload current manager
 		$_SESSION['espresso_use_selected_manager'] = 0;
 		$_SESSION['espresso_selected_manager'] = 0;
-		
+
 		//Display error message
 		$notices['errors'][] = __('That user is not an event manager/admin.', 'event_espresso').$wp_user;
 		do_action( 'action_hook_espresso_admin_notices');
@@ -157,9 +157,9 @@ function espresso_load_selected_manager(){
 //This function shows a notice that you are logged ina  someone else.
 function espresso_show_user_loaded_notice(){
 	global $notices, $current_user, $espresso_wp_user;
-	if ($_SESSION['espresso_use_selected_manager'] == false)
+	if (empty($_SESSION['espresso_use_selected_manager']))
 		return false;
-			
+
 	if ($current_user->ID != $espresso_wp_user){
 		$user = new WP_User( $espresso_wp_user );
 		$notices['updates'][] = '<strong style="color:red">'. __('You are logged-in as:', 'event_espresso') . '</strong> <a href="user-edit.php?user_id='.$user->ID.'" target="_blank">' .  $user->display_name . ' (' . $user->user_email . ')</a> [<a href="admin.php?page=espresso_permissions#selected_user" target="_blank">' . __('Exit User', 'event_espresso') . '</a>]';
@@ -266,7 +266,7 @@ function espresso_manager_pro_options(){
 			<?php echo select_input('event_manager_share_cats', $values, $espresso_manager['event_manager_share_cats']);?> <?php apply_filters( 'filter_hook_espresso_help', 'event_manager_share_cats');?></p>
 		<p>
 		  <?php _e('Managers can accept payments for their events?', 'event_espresso'); ?>
-		  <?php echo select_input('can_accept_payments', $values, $espresso_manager['can_accept_payments']);?> <?php apply_filters( 'filter_hook_espresso_help', 'can_accept_payments');?></p> 
+		  <?php echo select_input('can_accept_payments', $values, $espresso_manager['can_accept_payments']);?> <?php apply_filters( 'filter_hook_espresso_help', 'can_accept_payments');?></p>
 	</div>
 </div>
 <?php
@@ -283,34 +283,34 @@ if (!function_exists('espresso_manager_list')) {
 		if ($espresso_premium != true)
 			return;
 		//global $wpdb, $espresso_manager, $current_user;
-		 
+
 		// Get all event users users
 		//$blogusers = get_users();
-		
+
 		$event_managers = get_users(array(
 		    'role' => 'espresso_event_manager'
 		    //espresso_group_admin, wordpress administrator, espresso_event_admin
 		  ));
-		  
+
 		$group_admins = get_users(array(
 		    'role' => 'espresso_group_admin'
 		    //espresso_group_admin, wordpress administrator, espresso_event_admin
 		  ));
-		  
+
 		$admins = get_users(array(
 			'role' => 'administrator'
-		));  	
-		
+		));
+
 		$eadmins = get_users(array(
 			'role' => 'espresso_event_admin'
 		));
-			
+
 		//var_dump($blogusers);
-		
+
 		$blogusers1 = array_merge($event_managers, $group_admins);
 		$all_admins = array_merge($admins, $eadmins);
 		$blogusers = array_merge($blogusers1, $all_admins);
-		
+
 		// If there are any users
 		if ($blogusers) {
 			$field = '<label>' . __('Select an Event Admin or Manager', 'event_espresso') . '</label>';
@@ -324,19 +324,19 @@ if (!function_exists('espresso_manager_list')) {
 				// Get user info
 				$user = new WP_User($bloguser->ID);
 				//echo $current_value;
-			   
+
 				if ($user->has_cap('espresso_event_manager') || $user->has_cap('espresso_group_admin') || $user->has_cap('espresso_event_admin') || $user->has_cap('administrator') ) {
 					$i++;
 					$selected = $user->ID == $current_value ? 'selected="selected"' : '';
-					if ($user->first_name) { 
+					if ($user->first_name) {
 						$user_name = $user->first_name;
 						$user_name .= $user->last_name ? ' ' . $user->last_name:'' ;
 					}else{
 						$user_name = $user->user_nicename;
 					}
 					$field .= '<option rel="' . $i . '" ' . $selected . ' value="' . $user->ID . '">'.$user_name.' (' . $user->user_login . ') </option>';
-					
-					
+
+
 					$hidden = "display:none;";
 					if ($selected)
 						$hidden = '';
@@ -345,7 +345,7 @@ if (!function_exists('espresso_manager_list')) {
 					$div .= "<hr />";
 					$div .= "<ul class='user-view'>";
 					$div .= '<li><div style="float:right">'.get_avatar($user->user_email, $size = '48').'</div><strong>Display Name:</strong> <a href="user-edit.php?user_id='.$user->ID.'">'.$user->display_name.'</a>';
-					if ($user->first_name) { 
+					if ($user->first_name) {
 						$div .= '<li><strong>'.__('Full Name:', 'event_espresso').'</strong> ' . $user->first_name;
 						if ($user->last_name) { $div .= ' '.$user->last_name; }
 						$div .= "<li>";
@@ -355,10 +355,10 @@ if (!function_exists('espresso_manager_list')) {
 					$div .= "</ul>";
 					$div .= "<hr />";
 					$div .= "</fieldset>";
-					
+
 					/*// display avatar (48px square)
 					echo get_avatar($user->user_email, $size = '48');
-	 
+
 					// output other user data, if populated
 					echo('Display Name: <a href=\"'.$user->user_url."\">".$user->display_name."</a><br />\n");
 					echo('Username: ' . $user->user_login . "<br />\n");
@@ -414,17 +414,17 @@ function espresso_add_default_questions($user_id){
 			$wpdb->insert( $wpdb->prefix . "events_question", array('wp_user' => $user_id, 'question' => 'Phone', 'system_name' => 'phone', 'sequence' => '7'), array('%s', '%s', '%s') );
 
 		}
-		
+
 		$system_group = $wpdb->get_row("SELECT system_group FROM ". $wpdb->prefix . "events_qst_group" . " WHERE system_group = 1 AND wp_user='".$user_id."' ");
-	
+
 		if ($wpdb->num_rows == 0){
-	
+
 			//Add new groups, find id, assign the system questions to the group
 			$wpdb->insert( $wpdb->prefix . "events_qst_group", array('wp_user' => $user_id, 'group_name' => 'Personal Information', 'group_identifier'=>'personal_information-'.time(), 'system_group' => 1, 'group_order' => 1), array('%d','%s', '%s', '%d', '%d') );
 			$personal_group_id = $wpdb->insert_id;
 			$wpdb->insert( $wpdb->prefix . "events_qst_group", array('wp_user' => $user_id, 'group_name' => 'Address Information', 'group_identifier'=>'address_information-'.time(), 'system_group' => 0, 'group_order' => 2), array('%d','%s', '%s', '%d', '%d') );
-			$address_group_id = $wpdb->insert_id;				
-			
+			$address_group_id = $wpdb->insert_id;
+
 			//Personal Information System Group
 			//Find fname, lname, and email ids.  At this point, they will be in the system group.
 			$system_name_data = "SELECT id, system_name FROM " . $wpdb->prefix . "events_question" . " WHERE system_name IN ('fname', 'lname', 'email') AND wp_user='".$user_id."' ";
@@ -432,7 +432,7 @@ function espresso_add_default_questions($user_id){
 			foreach ($system_names as $system_name){
 				$wpdb->insert( $wpdb->prefix . "events_qst_group_rel", array('group_id' => $personal_group_id, 'question_id' => $system_name->id), array('%d', '%d') );
 			}
-			
+
 			//Address Group
 			//Find address, city, state, and zip ids.
 			$system_name_data = "SELECT id, system_name FROM " . $wpdb->prefix . "events_question" . " where system_name IN ('address', 'city', 'state', 'zip' ) AND wp_user='".$user_id."' ";
@@ -454,11 +454,11 @@ function espresso_locale_select($cur_locale_id = 0) {
 	global $wpdb;
 	$sql = "SELECT * FROM ". EVENTS_LOCALE_TABLE ." ORDER BY name ASC";
 	$results = $wpdb->get_results($sql);
-		
-	if ($wpdb->num_rows > 0) { 
+
+	if ($wpdb->num_rows > 0) {
 		$html = '<select name="locale" id="locale" class="chzn-select wide" >';
 		foreach ($results as $result){
-			$sel = "";		
+			$sel = "";
 			if( $cur_locale_id == $result->id ){
 				$sel = " SELECTED ";
 			}
@@ -467,7 +467,7 @@ function espresso_locale_select($cur_locale_id = 0) {
 		$html .= '</select>';
 	}
 	if(empty($result->id)){
-		$html = sprintf(__('You have not created any locales yet. To create Locales please visit % page.', 'event_espresso'), '<a href="admin.php?page=event_locales">'.__('Manage Locales/Regions', 'event_espresso').'</a>'); 
+		$html = sprintf(__('You have not created any locales yet. To create Locales please visit % page.', 'event_espresso'), '<a href="admin.php?page=event_locales">'.__('Manage Locales/Regions', 'event_espresso').'</a>');
 	}
 	return $html;
 }
