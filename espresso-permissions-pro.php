@@ -51,12 +51,38 @@ function espresso_permissions_pro_init() {
 	add_filter('filter_hook_espresso_event_editor_permissions', 'espresso_event_editor_permissions_filter', 10, 2);
 	add_filter('filter_hook_espresso_event_editor_categories_sql', 'espresso_event_editor_categories_sql_filter');
 	add_filter('filter_hook_espresso_event_editor_question_groups_sql', 'espresso_event_editor_question_groups_sql_filter', 10, 2);
+	add_filter('filter_hook_espresso_category_list_sql', 'espresso_permissions_pro_category_list_sql_filter', 10);
+	add_filter('filter_hook_espresso_question_list_sql', 'espresso_permissions_question_list_sql_filter', 20);
 	if (espresso_is_admin()) {
 		add_action('action_hook_espresso_event_editor_overview_add_li', 'espresso_event_editor_overview_add_li');
 	}
 }
 
 add_action('init', 'espresso_permissions_pro_init', 20);
+
+function espresso_permissions_question_list_sql_filter($sql) {
+	if (!isset($_REQUEST['all'])) {
+		if (espresso_is_admin() == true && !empty($_SESSION['espresso_use_selected_manager'])) {
+			global $espresso_wp_user;
+			$sql = " wp_user = '" . $espresso_wp_user . "' ";
+		} elseif (espresso_member_data('id') == 0 || espresso_member_data('id') == 1) {
+			//If the current user id is 0 or 1, then the user is the super admin. So we load the super admins questions
+			$sql = " (wp_user = '0' OR wp_user = '1') ";
+		} else {
+			//If the user is not an admin, but is an event manager or higher
+			$sql = " wp_user = '" . espresso_member_data('id') . "' ";
+		}
+	}
+	return $sql;
+}
+
+function espresso_permissions_pro_category_list_sql_filter($sql) {
+	if (!empty($_SESSION['espresso_use_selected_manager'])) {
+		$sql .= " JOIN $wpdb->users u on u.ID = c.wp_user WHERE c.wp_user = " . $espresso_wp_user;
+		remove_filter('filter_hook_espresso_category_list_sql', 'espresso_permissions_category_list_sql_filter', 20);
+	}
+	return $sql;
+}
 
 function espresso_event_editor_overview_add_li($event) {
 	?>
@@ -140,8 +166,6 @@ function espresso_add_permissions_pro_functions() {
 
 add_action('plugins_loaded', 'espresso_add_permissions_pro_functions', 10);
 
-
-
 function espresso_select_manager_form() {
 	espresso_load_selected_manager();
 	?>
@@ -173,7 +197,8 @@ function espresso_select_manager_form() {
 						<input type="text" name="event_manager_id" size="10" value="" />
 					</li>
 					<li>
-						<input class="button-primary" type="submit" name="Submit" value="<?php $manager_loaded == true ? _e('Logout/', 'event_espresso') : '';
+						<input class="button-primary" type="submit" name="Submit" value="<?php
+						$manager_loaded == true ? _e('Logout/', 'event_espresso') : '';
 						_e('Login Manager', 'event_espresso');
 							?>" id="load_manager" />
 					</li>
@@ -282,10 +307,10 @@ function espresso_permissions_user_groups() {
 	<div id="configure_espresso_manager_form" class="wrap meta-box-sortables ui-sortable">
 		<div id="icon-options-event" class="icon32"> </div>
 		<h2>
-	<?php _e('Event Espresso - Regional Managers', 'event_espresso'); ?>
+			<?php _e('Event Espresso - Regional Managers', 'event_espresso'); ?>
 		</h2>
 		<div id="event_espresso-col-left" style="width:70%;">
-	<?php espresso_edit_groups_page(); ?>
+			<?php espresso_edit_groups_page(); ?>
 		</div>
 	</div>
 	<?php
@@ -301,7 +326,7 @@ function espresso_manager_pro_options() {
 	?>
 	<div class="postbox">
 		<h3>
-	<?php _e('Advanced Options', 'event_espresso'); ?>
+			<?php _e('Advanced Options', 'event_espresso'); ?>
 		</h3>
 		<div class="inside">
 			<p>
@@ -309,7 +334,7 @@ function espresso_manager_pro_options() {
 				<?php echo select_input('event_manager_approval', $values, $espresso_manager['event_manager_approval']); ?> <?php apply_filters('filter_hook_espresso_help', 'event_manager_approval'); ?></p>
 			<p>
 				<?php _e('Regional managers can edit venues assigned to them?', 'event_espresso'); ?>
-			<?php echo select_input('event_manager_venue', $values, $espresso_manager['event_manager_venue']); ?> <?php apply_filters('filter_hook_espresso_help', 'event_manager_venue'); ?></p>
+				<?php echo select_input('event_manager_venue', $values, $espresso_manager['event_manager_venue']); ?> <?php apply_filters('filter_hook_espresso_help', 'event_manager_venue'); ?></p>
 			<?php
 			//I can't remember what this is for and it doesn't seem to have any settings anywhere. So I am disabling it for now. I think it was added for SMW??
 			/* ?><p>
@@ -317,14 +342,14 @@ function espresso_manager_pro_options() {
 			  <?php echo select_input('event_manager_staff', $values, $espresso_manager['event_manager_staff']);?> <?php apply_filters( 'filter_hook_espresso_help', 'event_manager_create_post');?></p>
 			  <p><?php */
 			?>
-				<?php _e('Anyone can create a post when publishing an event?', 'event_espresso'); ?>
+			<?php _e('Anyone can create a post when publishing an event?', 'event_espresso'); ?>
 				<?php echo select_input('event_manager_create_post', $values, $espresso_manager['event_manager_create_post']); ?> <?php apply_filters('filter_hook_espresso_help', 'event_manager_create_post'); ?></p>
 			<p>
 				<?php _e('Enable sharing of categories between users?', 'event_espresso'); ?>
 				<?php echo select_input('event_manager_share_cats', $values, $espresso_manager['event_manager_share_cats']); ?> <?php apply_filters('filter_hook_espresso_help', 'event_manager_share_cats'); ?></p>
 			<p>
 				<?php _e('Managers can accept payments for their events?', 'event_espresso'); ?>
-	<?php echo select_input('can_accept_payments', $values, $espresso_manager['can_accept_payments']); ?> <?php apply_filters('filter_hook_espresso_help', 'can_accept_payments'); ?></p>
+				<?php echo select_input('can_accept_payments', $values, $espresso_manager['can_accept_payments']); ?> <?php apply_filters('filter_hook_espresso_help', 'can_accept_payments'); ?></p>
 		</div>
 	</div>
 	<?php
