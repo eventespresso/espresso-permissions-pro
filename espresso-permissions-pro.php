@@ -562,3 +562,18 @@ function espresso_add_new_event_submit_box_permissions_pro_filter($buffer) {
 }
 
 add_filter('filter_hook_espresso_add_new_event_submit_box', 'espresso_add_new_event_submit_box_permissions_pro_filter');
+
+function espresso_permissions_pro_filter_wp_user_id($wp_user_id) {
+	if (!empty($_SESSION['espresso_use_selected_manager'])) {
+		$wp_user_id = $current_user->ID;
+
+		//If an event manager is selected, then we need to load that persons id
+		$selected_user = espresso_get_selected_manager();
+		if (!empty($selected_user)) {
+			$wp_user_id = $selected_user;
+		}
+	}
+	return $wp_user_id;
+}
+
+add_filter('filter_hook_espresso_get_user_id', 'espresso_permissions_pro_filter_wp_user_id', 20);
