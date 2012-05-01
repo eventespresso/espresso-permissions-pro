@@ -540,7 +540,7 @@ function espresso_locale_select($cur_locale_id = 0) {
 	$results = $wpdb->get_results($sql);
 
 	if ($wpdb->num_rows > 0) {
-		$html = '<select name="locale" id="locale" class="chzn-select wide" >';
+		$html = '<select name="locale" id="locale" >';
 		foreach ($results as $result) {
 			$sel = "";
 			if ($cur_locale_id == $result->id) {
