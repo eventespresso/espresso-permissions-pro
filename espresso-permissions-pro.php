@@ -139,11 +139,12 @@ function espresso_add_permissions_pro_functions() {
 	}
 
 	function espresso_is_admin() {
-		if (espresso_member_data('role') == 'espresso_group_admin' || espresso_member_data('role') == 'espresso_event_admin' || current_user_can('administrator')) {
-			return true;
-		} else {
-			return false;
+		if ( function_exists( 'espresso_member_data' )) {
+			if (espresso_member_data('role') == 'espresso_group_admin' || espresso_member_data('role') == 'espresso_event_admin' || current_user_can('administrator')) {
+				return true;
+			} 
 		}
+		return false;
 	}
 
 	function espresso_is_my_event($event_id) {
