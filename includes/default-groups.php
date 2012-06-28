@@ -1,6 +1,6 @@
 <div class="wrap">
-	<h2><?php echo $title; ?></h2>
-	<?php do_action( 'action_hook_espresso_pre_edit_groups_form' );?>
+	<h2><?php if ( isset( $title ) ) echo $title ; ?></h2>
+	<?php do_action( 'espresso_pre_edit_groups_form' );?>
 	<div id="poststuff">
 		<table class="widefat fixed" cellspacing="0">
 		<thead>
@@ -24,7 +24,8 @@
 	global $table_prefix;
 	$authors = $wpdb->get_results("SELECT * from $wpdb->usermeta WHERE meta_key = '".$table_prefix.'capabilities'."' AND meta_value LIKE '%espresso_group_admin%'");
 	foreach ( (array) $authors as $author ) {
-		$author = get_userdata( $author->user_id );
+        
+		$author = get_userdata( $author->user_id ); 
 //		print_r($author);
 //		die();
 		$name = $author->user_login;
@@ -39,8 +40,8 @@
 					<a href="<?php echo $edit_link; ?>" title="<?php printf( __('Edit the %1$s role', 'event-espresso'), $name ); ?>"><? _e('Edit', 'event-espresso'); ?></a> 
 				</div>
 			</td>
-			<td><?=$author->user_email?></td>
-			<td><?=$author->user_nicename?></td>
+			<td><?php echo $author->user_email; ?></td>
+			<td><?php echo $author->user_nicename; ?></td>
 		</tr>
 <?php
 	}

@@ -7,7 +7,7 @@
 <div class="wrap">
 	<h2><?php echo "Edit ".$author->user_nicename."'s locales/regions"; ?></h2>
 	<?php if ( $group_updated ) espresso_admin_message( '', __('Manager updated.', 'event-espresso') ); ?>
-	<?php do_action( 'action_hook_espresso_pre_edit_group_form' );?>
+	<?php do_action( 'espresso_pre_edit_group_form' );?>
 	<div id="poststuff">
 		<form name="form0" method="post" action="<?php echo admin_url( esc_url( "admin.php?page=event_groups&amp;action=save&amp;uid={$uid}" ) ); ?>" style="border:none;background:transparent;">
 			<?php wp_nonce_field( espresso_get_nonce( 'edit-groups' ) ); ?>
