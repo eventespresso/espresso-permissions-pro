@@ -344,7 +344,8 @@ function espresso_add_default_questions($user_id) {
 	}
 }
 
+/** testing removal of adding default questions/groups, shouldn't be needed anymore because of the new is_global flag **/
 // function espresso_add_default_questions
-add_action('personal_options_update', 'espresso_add_default_questions');
+/*add_action('personal_options_update', 'espresso_add_default_questions');
 add_action('edit_user_profile_update', 'espresso_add_default_questions');
-add_action('user_register', 'espresso_add_default_questions');
+add_action('user_register', 'espresso_add_default_questions');*/
