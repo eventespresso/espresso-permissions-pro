@@ -127,9 +127,11 @@ function espresso_permissions_pro_run(){
 	//Checks to see if a user is an admin 
 	if (!function_exists('espresso_is_admin')) {
 		function espresso_is_admin(){
-			if( espresso_member_data('role')=='espresso_group_admin' || espresso_member_data('role')=='espresso_event_admin' || current_user_can('administrator') ){
+			global $current_user;
+			if( current_user_can('espresso_group_admin') || current_user_can('espresso_event_admin') || current_user_can('administrator') ){
 				return true;
 			}
+			return false;
 		}
 	}
 	
