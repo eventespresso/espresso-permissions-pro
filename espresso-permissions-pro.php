@@ -311,6 +311,7 @@ function espresso_manager_pro_options(){
 add_filter('espresso_get_user_questions_for_group', 'espresso_rp_pro_get_user_questions_for_group', 15, 3);
 add_filter('espresso_get_user_questions_for_group_extra_attached','espresso_rp_pro_get_user_questions_for_group', 15, 3);
 add_filter('espresso_get_user_questions_where', 'espresso_rp_pro_get_user_questions_where', 15, 3);
+add_filter('espresso_get_question_groups_for_event_where', 'espresso_rp_pro_get_question_groups_for_event_where', 15, 3);
 
 function espresso_rp_pro_get_user_questions_for_group( $where, $group_id, $user_id ) {
 	$where = " WHERE q.wp_user = '" . $user_id . "'";
@@ -318,7 +319,7 @@ function espresso_rp_pro_get_user_questions_for_group( $where, $group_id, $user_
 }
 
 function espresso_rp_pro_get_user_questions_where( $where, $user_id, $num ) {
-	$modified_where = " WHERE qg.wp_user = '" . $user_id . "' ";
+	$modified_where = " WHERE q.wp_user = '" . $user_id . "' ";
 
 	if ( espresso_is_admin() && !$num ) {
 		$where = !isset($_REQUEST['all']) ? $modified_where : "";
@@ -329,7 +330,18 @@ function espresso_rp_pro_get_user_questions_where( $where, $user_id, $num ) {
 	return $where;
 }
 
-//also to account for users who don't have questions duplicated for them when pro is activated.  IF there are NO questions pulled from the database when creating or editing a group (so we need to check insert group page as well) then we need to hook into the after questions query so that we can duplicate all system questions (save them to the db for that user) and then display THEM for the user editing adding the group... should happen transparently.  OR BETTER YET it may be a good idea to just make sure all existing users on activation get the duplicated questions/groups.
+function espresso_rp_pro_get_question_groups_for_event_where($where, $existing_question_groups, $event) {
+	$wp_user = empty($event) ? get_current_user_id() : $event->wp_user;
+	$modified_where = " WHERE qg.wp_user = '" . $wp_user . "' ";
+
+	//if we've got existing $questions then we want to make sure we're pulling them in.
+	if ( !empty($existing_question_groups) ) {
+		$modified_where .= " OR qg.id IN (  " . implode( ',', $existing_question_groups ) . " ) ";
+	}
+
+	return $modified_where;
+}
+/** end of some code added by darren **/
 
 function espresso_edit_groups_page(){
 	require_once( 'includes/groups.php' );
@@ -343,6 +355,7 @@ function espresso_add_default_questions($user_id, $_role = false) {
 		// since this is an espresso role, let's check to see if there are any questions assigned to this user
 		$sql = 'SELECT * FROM ' . $wpdb->prefix . 'events_question WHERE wp_user = "' . $user_id . '" AND (system_name = "fname" OR system_name = "lname" OR system_name = "email")';
 		$questions = $wpdb->get_results($wpdb->prepare($sql));
+		var_dump($questions);
 
 		if (sizeof($questions) == 0) {
 			// no questions found, then insert the default questions
