@@ -355,7 +355,7 @@ function espresso_add_default_questions($user_id, $_role = false) {
 		// since this is an espresso role, let's check to see if there are any questions assigned to this user
 		$sql = 'SELECT * FROM ' . $wpdb->prefix . 'events_question WHERE wp_user = "' . $user_id . '" AND (system_name = "fname" OR system_name = "lname" OR system_name = "email")';
 		$questions = $wpdb->get_results($wpdb->prepare($sql));
-		var_dump($questions);
+		//var_dump($questions);
 
 		if (sizeof($questions) == 0) {
 			// no questions found, then insert the default questions
