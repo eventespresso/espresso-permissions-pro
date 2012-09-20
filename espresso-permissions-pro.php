@@ -73,6 +73,18 @@ function espresso_manager_pro_install(){
 	    'espresso_event_manager' => true,
 	    'delete_posts' => false, // Use false to explicitly deny
 	));
+
+	//make sure that questions get duplicated for existing users that have master_admin privileges.
+	$event_admin_users = get_users('role=espresso_event_admin');
+	$administrator_users = get_users('role=administrator');
+
+	foreach ( $event_admin_users as $e_user ) {
+		espresso_add_default_questions($e_user->ID, 'espresso_event_admin');
+	}
+
+	foreach ( $administrator_users as $a_user ) {
+		espresso_add_default_questions($a_user->ID, 'administrator');
+	}
 }
 register_activation_hook(__FILE__,'espresso_manager_pro_install');
 
@@ -290,18 +302,60 @@ function espresso_manager_pro_options(){
 <?php
 }
 
+/** ADDED BY DARREN **/
+/**
+ * adding in filters for questions displayed on edit groups pages.
+ */
+
+//add filters for pro
+add_filter('espresso_get_user_questions_for_group', 'espresso_rp_pro_get_user_questions_for_group', 15, 3);
+add_filter('espresso_get_user_questions_for_group_extra_attached','espresso_rp_pro_get_user_questions_for_group', 15, 3);
+add_filter('espresso_get_user_questions_where', 'espresso_rp_pro_get_user_questions_where', 15, 3);
+add_filter('espresso_get_question_groups_for_event_where', 'espresso_rp_pro_get_question_groups_for_event_where', 15, 3);
+
+function espresso_rp_pro_get_user_questions_for_group( $where, $group_id, $user_id ) {
+	$where = " WHERE q.wp_user = '" . $user_id . "'";
+	return $where;
+}
+
+function espresso_rp_pro_get_user_questions_where( $where, $user_id, $num ) {
+	$modified_where = " WHERE q.wp_user = '" . $user_id . "' ";
+
+	if ( espresso_is_admin() && !$num ) {
+		$where = !isset($_REQUEST['all']) ? $modified_where : "";
+	} else {
+		$where = $modified_where;
+	}
+
+	return $where;
+}
+
+function espresso_rp_pro_get_question_groups_for_event_where($where, $existing_question_groups, $event) {
+	$wp_user = empty($event) ? get_current_user_id() : $event->wp_user;
+	$modified_where = " WHERE qg.wp_user = '" . $wp_user . "' ";
+
+	//if we've got existing $questions then we want to make sure we're pulling them in.
+	if ( !empty($existing_question_groups) ) {
+		$modified_where .= " OR qg.id IN (  " . implode( ',', $existing_question_groups ) . " ) ";
+	}
+
+	return $modified_where;
+}
+/** end of some code added by darren **/
+
 function espresso_edit_groups_page(){
 	require_once( 'includes/groups.php' );
 }
 
-function espresso_add_default_questions($user_id) {
+function espresso_add_default_questions($user_id, $_role = false) {
 	global $wpdb;
-	$role = $_POST['role'];
+	$role = $_role ? $_role : $_POST['role'];
 
-	if (substr($role, 0, 9) == "espresso_") { // this covers any espresso roles
+	if (substr($role, 0, 9) == "espresso_" || $role == 'administrator' ) { // this covers any espresso roles
 		// since this is an espresso role, let's check to see if there are any questions assigned to this user
 		$sql = 'SELECT * FROM ' . $wpdb->prefix . 'events_question WHERE wp_user = "' . $user_id . '" AND (system_name = "fname" OR system_name = "lname" OR system_name = "email")';
 		$questions = $wpdb->get_results($wpdb->prepare($sql));
+		//var_dump($questions);
 
 		if (sizeof($questions) == 0) {
 			// no questions found, then insert the default questions
