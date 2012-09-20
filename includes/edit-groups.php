@@ -2,7 +2,6 @@
 	$author = get_userdata( $uid );
 #	echo "<pre>".print_r($author,true)."</pre>";
 	$group = get_user_meta($uid, "espresso_group", true);
-	$group = unserialize($group);
 ?>
 <div class="wrap">
 	<h2><?php echo "Edit ".$author->user_nicename."'s locales/regions"; ?></h2>

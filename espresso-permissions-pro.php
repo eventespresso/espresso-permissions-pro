@@ -93,7 +93,6 @@ register_activation_hook(__FILE__,'espresso_manager_pro_install');
 		global $wpdb, $org_options,$current_user;
 		wp_get_current_user();
 		$group = get_user_meta(espresso_member_data('id'), "espresso_group", true);
-		$group = unserialize($group);
 		if( espresso_member_data('role')=='espresso_group_admin' ){
 			$sql = "(SELECT e.wp_user ";
 			$sql .= " FROM ". EVENTS_DETAIL_TABLE ." e ";

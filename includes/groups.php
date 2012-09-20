@@ -6,7 +6,7 @@
 		case 'save':
 			//	update user meta
 			if ( !empty($_REQUEST['locales']) ){
-				$locales = serialize($_REQUEST['locales']);
+				$locales = $_REQUEST['locales'];
 			}else{
 				$locales = 0;
 			}
