@@ -405,12 +405,12 @@ add_action('edit_user_profile_update', 'espresso_add_default_questions');
 add_action('user_register', 'espresso_add_default_questions');/**/
 
 /** STAFF MANAGEMENT STUFF **/
-add_filter('filter_hook_espresso_personal_cb_where', 'espresso_filter_staff_meta_box_list');
+add_filter('filter_hook_espresso_personal_cb_where', 'espresso_filter_staff_meta_box_list', 10, 2);
 add_filter('filter_hook_espresso_staff_config_mnu_join', 'espresso_filter_staff_table_list_join');
 add_filter('filter_hook_espresso_staff_config_mnu_where', 'espresso_filter_staff_table_list_where');
 
 function espresso_filter_staff_meta_box_list($where, $event_id) {
-
+	global $wpdb;
 	//todo: I just copied over the code that was existing in core.  This needs to be modified to fit the criteria of the ticket.
 	$wpdb->get_results("SELECT wp_user FROM " . EVENTS_DETAIL_TABLE . " WHERE id = '" . $event_id . "'");
 	$wp_user = $wpdb->last_result[0]->wp_user !='' ? $wpdb->last_result[0]->wp_user:espresso_member_data('id');
@@ -424,7 +424,8 @@ function espresso_filter_staff_meta_box_list($where, $event_id) {
 	return $where;
 }
 
-function espresso_filter_staff_meta_box_list_join($join) {
+function espresso_filter_staff_table_list_join($join) {
+	global $wpdb;
 	$limitstaff = false;
     global $espresso_manager;
     
@@ -445,7 +446,8 @@ function espresso_filter_staff_meta_box_list_join($join) {
 
 function espresso_filter_staff_table_list_where($where) {
 	$limitstaff = false;
-    global $espresso_manager;
+    global $espresso_manager, $current_user;
+    get_currentuserinfo();
     
     if ( espresso_member_data('role') == 'espresso_group_admin' ) {
         if ($espresso_manager['event_manager_staff'] == "Y") {
