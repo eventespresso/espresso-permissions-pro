@@ -283,7 +283,7 @@ function espresso_manager_pro_options(){
           <?php _e('Enable sharing of categories between users?', 'event_espresso'); ?>
           <?php echo select_input('event_manager_share_cats', $values, $espresso_manager['event_manager_share_cats']);?></p>
 		
-		<?php if ( function_exists('espresso_event_submission_version') ){
+		<?php if ( function_exists('espresso_fem_version') ){
 				$min_levels = array(
 					array('id'=>'0','text'=> __('All Users','event_espresso')),
 					array('id'=>'1','text'=> __('Espresso Event Manager','event_espresso')),
@@ -294,12 +294,13 @@ function espresso_manager_pro_options(){
 		?>
 				<p>
 				  <?php _e('Minimum level required to use the Front Event Manager page?', 'event_espresso'); ?>
-				  <?php echo select_input('minimum_fes_level', $min_levels, $espresso_manager['minimum_fes_level']);?></p>
+				  <?php echo select_input('minimum_fem_level', $min_levels, isset($espresso_manager['minimum_fem_level']) && !empty($espresso_manager['minimum_fem_level']) ? $espresso_manager['minimum_fem_level'] : 4);?></p>
 		<?php }?>
       </div>
     </div>
 <?php
 }
+
 
 /** ADDED BY DARREN **/
 /**
