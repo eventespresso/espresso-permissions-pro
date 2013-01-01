@@ -404,3 +404,62 @@ function espresso_add_default_questions($user_id, $_role = false) {
 add_action('personal_options_update', 'espresso_add_default_questions');
 add_action('edit_user_profile_update', 'espresso_add_default_questions');
 add_action('user_register', 'espresso_add_default_questions');/**/
+
+/** STAFF MANAGEMENT STUFF **/
+add_filter('filter_hook_espresso_personal_cb_where', 'espresso_filter_staff_meta_box_list', 10, 2);
+add_filter('filter_hook_espresso_staff_config_mnu_join', 'espresso_filter_staff_table_list_join');
+add_filter('filter_hook_espresso_staff_config_mnu_where', 'espresso_filter_staff_table_list_where');
+
+function espresso_filter_staff_meta_box_list($where, $event_id) {
+	global $wpdb;
+	//todo: I just copied over the code that was existing in core.  This needs to be modified to fit the criteria of the ticket.
+	$wpdb->get_results("SELECT wp_user FROM " . EVENTS_DETAIL_TABLE . " WHERE id = '" . $event_id . "'");
+	$wp_user = $wpdb->last_result[0]->wp_user !='' ? $wpdb->last_result[0]->wp_user:espresso_member_data('id');
+	$where = " WHERE ";
+	if ($wp_user == 0 || $wp_user == 1){
+		$where .= " (wp_user = '0' OR wp_user = '1') ";
+	}else{
+		$where .= " wp_user = '" . $wp_user ."' ";
+	}
+
+	return $where;
+}
+
+function espresso_filter_staff_table_list_join($join) {
+	global $wpdb;
+	$limitstaff = false;
+    global $espresso_manager;
+    
+    if ( espresso_member_data('role') == 'espresso_group_admin' ) {
+        if ($espresso_manager['event_manager_staff'] == "Y") {
+            $limitstaff = true;
+        }
+    } else if ( espresso_member_data('role') == 'espresso_event_manager') {
+        $limitstaff = true;
+    }
+
+	if ($limitstaff) {
+        $join = " JOIN $wpdb->users u on u.ID = p.wp_user";
+    }
+
+    return $join;
+}
+
+function espresso_filter_staff_table_list_where($where) {
+	$limitstaff = false;
+    global $espresso_manager, $current_user;
+    get_currentuserinfo();
+    
+    if ( espresso_member_data('role') == 'espresso_group_admin' ) {
+        if ($espresso_manager['event_manager_staff'] == "Y") {
+            $limitstaff = true;
+        }
+    } else if ( espresso_member_data('role') == 'espresso_event_manager') {
+        $limitstaff = true;
+    }
+
+	if ( $limitstaff) {
+		$where = " WHERE p.wp_user = " . $current_user->ID;
+	}
+	return $where;
+}
