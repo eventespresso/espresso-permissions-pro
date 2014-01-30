@@ -10,6 +10,33 @@ Copyright 2011  Event Espresso  (email : support@eventespresso.com)
 
 */
 
+if ( !function_exists('espresso_member_data') ) {
+
+	add_action ('plugins_loaded', 'ee_permissions_pro_check_for_basic');
+	
+	function ee_permissions_pro_check_for_basic() {
+		if ( current_user_can( 'activate_plugins' ) ) {
+ 
+			add_action( 'admin_init', 'ee_permissions_pro_deactivate' );
+			add_action( 'admin_notices', 'ee_permissions_pro_admin_notice' );
+ 
+			function ee_permissions_pro_deactivate() {
+				deactivate_plugins( plugin_basename( __FILE__ ) );
+			}
+ 
+			function ee_permissions_pro_admin_notice() {
+				echo '<div class="updated" style="padding:15px; position:relative;"><p>Plugin <strong>not activated. <em>Important:</em></strong> Please install the Roles and Permissions basic add-on first, it\'s required in order to run R&P Pro.<br>';
+				echo 'If you\'re unsure if the Roles and Permissions feature set is suited for your Event Espresso installation, please contact us via the eventespresso.com support forums.</p></div>';
+				if ( isset( $_GET['activate'] ) )
+					unset( $_GET['activate'] );
+			}
+ 
+		}
+
+	}
+ 
+} else {
+
 //Update notifications
 add_action('action_hook_espresso_permissions_pro_update_api', 'ee_permissions_pro_load_pue_update');
 function ee_permissions_pro_load_pue_update() {
@@ -481,4 +508,6 @@ function espresso_filter_staff_table_list_where($where) {
 		$where = " WHERE p.wp_user = " . $current_user->ID;
 	}
 	return $where;
+}
+
 }
