@@ -25,7 +25,7 @@ if ( !function_exists('espresso_member_data') ) {
 			}
  
 			function ee_permissions_pro_admin_notice() {
-				echo '<div class="updated" style="padding:15px; position:relative;"><p>Plugin <strong>not activated. <em>Important:</em></strong> Please install the Roles and Permissions basic add-on first, it\'s required in order to run R&P Pro.<br>';
+				echo '<div class="updated" style="padding:15px; position:relative;"><p>The Roles and Permissions Pro plugin <strong>is not activated. <em>Important:</em></strong> Please install the <a href="http://eventespresso.com/product/espresso-permissions-basic/">Roles and Permissions basic add-on</a> first, it\'s required in order to run R&P Pro.<br>';
 				echo 'If you\'re unsure if the Roles and Permissions feature set is suited for your Event Espresso installation, please contact us via the eventespresso.com support forums.</p></div>';
 				if ( isset( $_GET['activate'] ) )
 					unset( $_GET['activate'] );
