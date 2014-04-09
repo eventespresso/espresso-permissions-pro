@@ -2,13 +2,40 @@
 /*
 Plugin Name: Event Espresso - Roles and Permissions Pro
 Plugin URI: http://www.eventespresso.com
-Description: Provides support for allowing members of the espreesso_event_admin and espreesso_event_manager roles to administer events.
-Version: 2.0.7.p
+Description: Provides support for allowing members of the espresso_event_admin and espresso_event_manager roles to administer events.
+Version: 2.0.8.p
 Author: Event Espresso
 Author URI: http://www.eventespresso.com
 Copyright 2011  Event Espresso  (email : support@eventespresso.com)
 
 */
+
+if ( !function_exists('espresso_member_data') ) {
+
+	add_action ('plugins_loaded', 'ee_permissions_pro_check_for_basic');
+	
+	function ee_permissions_pro_check_for_basic() {
+		if ( current_user_can( 'activate_plugins' ) ) {
+ 
+			add_action( 'admin_init', 'ee_permissions_pro_deactivate' );
+			add_action( 'admin_notices', 'ee_permissions_pro_admin_notice' );
+ 
+			function ee_permissions_pro_deactivate() {
+				deactivate_plugins( plugin_basename( __FILE__ ) );
+			}
+ 
+			function ee_permissions_pro_admin_notice() {
+				echo '<div class="updated" style="padding:15px; position:relative;"><p>The Roles and Permissions Pro plugin <strong>is not activated. <em>Important:</em></strong> Please install the <a href="http://eventespresso.com/product/espresso-permissions-basic/">Roles and Permissions basic add-on</a> first, it\'s required in order to run R&P Pro.<br>';
+				echo 'If you\'re unsure if the Roles and Permissions feature set is suited for your Event Espresso installation, please contact us via the eventespresso.com support forums.</p></div>';
+				if ( isset( $_GET['activate'] ) )
+					unset( $_GET['activate'] );
+			}
+ 
+		}
+
+	}
+ 
+} else {
 
 //Update notifications
 add_action('action_hook_espresso_permissions_pro_update_api', 'ee_permissions_pro_load_pue_update');
@@ -39,7 +66,7 @@ function ee_permissions_pro_load_pue_update() {
 }
 //Define the version of the plugin
 function espresso_manager_pro_version() {
-	return '2.0.7.p';
+	return '2.0.8.p';
 }
 
 
@@ -481,4 +508,6 @@ function espresso_filter_staff_table_list_where($where) {
 		$where = " WHERE p.wp_user = " . $current_user->ID;
 	}
 	return $where;
+}
+
 }
