@@ -493,8 +493,9 @@ function espresso_filter_staff_table_list_join($join) {
 
 function espresso_filter_staff_table_list_where($where) {
 	$limitstaff = false;
-    global $espresso_manager, $current_user;
-    get_currentuserinfo();
+    global $espresso_manager;
+    
+    $current_user = wp_get_current_user();
     
     if ( espresso_member_data('role') == 'espresso_group_admin' ) {
         if ($espresso_manager['event_manager_staff'] == "Y") {
